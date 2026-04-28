@@ -1,4 +1,4 @@
-# IDP-finder
+# IDR-finder
 
 ### Links 
 [introduction](https://pmc.ncbi.nlm.nih.gov/articles/PMC9693201/#B53-ijms-23-14050)
