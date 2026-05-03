@@ -8,6 +8,9 @@ Author: jcapecci09
 
 import subprocess
 import os
+from concurrent.futures import ThreadPoolExecutor
+import requests
+import time
 
 def parse_consensus(fasta: str, recoded_fasta: str) -> list[str]:
     """Parses consensus IDR data from DisProt. Consensus sequences have the
@@ -50,6 +53,25 @@ def parse_consensus(fasta: str, recoded_fasta: str) -> list[str]:
     return acc
 
 
+def download(url: str):
+
+    filename = url.split('/')[-1]
+    
+    try:
+        r = requests.get(url, timeout=10)
+        
+        if r.status_code == 200 and r.content:
+            print(f"downloading data from: {url}")
+            return r.text
+        else:
+            print(f"Failed: {url} ({r.status_code})")
+            return None
+         
+
+    except Exception as e:
+        print(f"Error: {url} -> {e}")
+        return None
+
         
                 
 def main():
@@ -57,14 +79,28 @@ def main():
     # Parse consensus fasta to grab accessions and recode fasta
     accs = parse_consensus('consensus_IDR.txt', 'recoded_IDR.txt')
     
-    # create new directory
-    os.makedirs('UniProt_data')
+    # Collect URLS in list
+    urls = [f'https://rest.uniprot.org/uniprotkb/{acc}.fasta' for acc in accs]
 
-    
-    for acc in accs:
-        subprocess.run(['wget', '-P', 'UniProt_data', f'https://rest.uniprot.org/uniprotkb/{acc}.fasta'])
+    # Make directory to hold data
+    os.makedirs('UniProt_data', exist_ok=True)
+
+    # define number of workers
+    num_workers = 6
+
+    # Download data faster
+    start = time.perf_counter()
+    with ThreadPoolExecutor(max_workers=num_workers) as executer:
+        results = list(executer.map(download, urls))
+    end = time.perf_counter()
+
+    print(f'Time to download data: {end - start} with ')
+
+    # Combine data into one fasta file
+    with open('UniProt_data/proteins.fasta', 'w') as f:
+        for fasta in results:
+            if fasta:
+                f.write(fasta)
 
 if __name__ == '__main__':
     main()
-
-
