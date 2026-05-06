@@ -6,7 +6,7 @@
 Author: jcapecci09
 """
 
-import subprocess
+from pathlib import Path
 import os
 from concurrent.futures import ThreadPoolExecutor
 import requests
@@ -54,53 +54,88 @@ def parse_consensus(fasta: str, recoded_fasta: str) -> list[str]:
 
 
 def download(url: str):
+    """Download fasta data from a UniProt URL.
 
+    :param url: UniProt fasta URL
+    :return: Fasta text if successful, otherwise None
+    """
+
+    # Extract filename from URL
     filename = url.split('/')[-1]
     
     try:
+
+        # Send GET request with timeout to avoid hanging forever
         r = requests.get(url, timeout=10)
         
+        # Check if request succeeded and response contains data
         if r.status_code == 200 and r.content:
+
+            # Print successful download
             print(f"downloading data from: {url}")
+
+            # Return fasta text
             return r.text
         else:
+
+            # Print failed request status code
             print(f"Failed: {url} ({r.status_code})")
             return None
          
-
     except Exception as e:
+
+        # Catch connection/time out errors without crashing program
         print(f"Error: {url} -> {e}")
         return None
-
         
                 
 def main():
 
+    # Make directory to hold data
+    os.makedirs('Data', exist_ok=True)
+
     # Parse consensus fasta to grab accessions and recode fasta
-    accs = parse_consensus('consensus_IDR.txt', 'recoded_IDR.txt')
+    accs = parse_consensus('consensus_IDR.txt', 'Data/consensus_IDR_recoded.txt')
     
     # Collect URLS in list
     urls = [f'https://rest.uniprot.org/uniprotkb/{acc}.fasta' for acc in accs]
 
-    # Make directory to hold data
-    os.makedirs('UniProt_data', exist_ok=True)
-
-    # define number of workers
-    num_workers = 6
 
     # Download data faster
-    start = time.perf_counter()
-    with ThreadPoolExecutor(max_workers=num_workers) as executer:
-        results = list(executer.map(download, urls))
-    end = time.perf_counter()
+    # Program spends most of its time waiting for network responses
+    # ThreadPoolExecutor allows multiple URL downloads to happen concurrently
+    # While one thread waits for a response, another can download data
+    if not Path('Data/UniProt.fasta').exists():
 
-    print(f'Time to download data: {end - start} with ')
+        # define number of workers 
+        num_workers = 32
+        start = time.perf_counter()
 
-    # Combine data into one fasta file
-    with open('UniProt_data/proteins.fasta', 'w') as f:
-        for fasta in results:
-            if fasta:
-                f.write(fasta)
+        # Create a pool of worker threads to download URL's concurrently
+        with ThreadPoolExecutor(max_workers=num_workers) as executer:
+
+            # Map each URL to the download function
+            # Returns downloaded fasta contents in order
+            results = list(executer.map(download, urls))
+
+        end = time.perf_counter()
+
+        # Print total download time
+        print(f'Time to download data: {(end - start):.2f}s with {num_workers} workers')
+
+        # Combine all fasta data into one fasta file
+        with open('Data/UniProt.fasta', 'w') as f:
+            for fasta in results:
+
+                # Skip failed downloads that returned None
+                if fasta:
+                    f.write(fasta)
+
+        print('data retrieved')
+    
+    # If directory already contains data, don't bother downloading
+    else:
+        print('Data already retrieved')
 
 if __name__ == '__main__':
     main()
