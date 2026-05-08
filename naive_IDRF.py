@@ -33,3 +33,43 @@ scoring_matrix = {
 # 4. Then we can iteravily go back over our answers and remove any disorered sequences that aren't 5-21 amino acids
 # have to consider edge cases: end of sequence
 # Maybe do a window instead? Look at 3 amino acids before and 3 after?
+
+seq = 'MEMFQGLLLLLLLSMGGTWASKEPLRPRCRPINATLAVEKEGCPVCITVNTTICAGYCPTMTRVLQGVLPALPQVVCNYRDVRFESIRLPGCPRGVNPVVSYAVALSCQCALCRRSTTDCGGPKDHPLTCDDPRFQDSSSSKAPPPSLPSPSRLPGPSDTPILPQ'
+
+length = len(seq)
+score = 0
+recoded = ''
+
+for aa, indx in zip(seq, range(length)): 
+
+    # Takes care of edge case at front of sequence
+    if indx - 3 < 0:
+        first = 0
+    else:
+        first = indx - 3
+
+    # Takes care of edge case at end of sequence 
+    if indx + 3 > length:
+        last = length
+    else:
+        last = indx + 3
+    
+    window = seq[first:last]
+    print(window)
+    
+    for letter in window:
+        score += scoring_matrix[letter]
+        
+    
+
+    if score >= 6:
+        recoded += '1'
+        score = 3
+    else:
+        recoded += '0'
+        score = 0
+print(recoded)
+
+
+
+    
