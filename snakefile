@@ -1,13 +1,15 @@
 rule all:
     input:
-        'Data/test_uniprot.fasta'
+        test_csv = 'Data/csv_datasets/test_csv',
+        train_csv = 'Data/csv_datasets/train_csv',
+        val_csv = 'Data/csv_datasets/val_csv'
 
 rule disprot_encoder:
     input:
         'consensus_IDR.txt'
     
     output:
-        directory('Data')
+        directory('Data/encoded')
     
     shell:
         '''
@@ -17,15 +19,15 @@ rule disprot_encoder:
 
 rule split_fastas:
     input:
-        recoded='Data/consensus_IDR_recoded.txt',
-        uniprot='Data/UniProt.fasta'
+        recoded='Data/encoded/consensus_IDR_recoded.txt',
+        uniprot='Data/encoded/UniProt.fasta'
     output: 
-        test='Data/test_uniprot.fasta',
-        train='Data/train_uniprot.fasta',
-        val='Data/validation_uniprot.fasta',
-        test1='Data/test_recoded.fasta',
-        train1='Data/train_recoded.fasta',
-        val1='Data/validation_recoded.fasta'
+        test='Data/fasta/test_uniprot.fasta',
+        train='Data/fasta/train_uniprot.fasta',
+        val='Data/fasta/validation_uniprot.fasta',
+        test1='Data/fasta/test_recoded.fasta',
+        train1='Data/fasta/train_recoded.fasta',
+        val1='Data/fasta/validation_recoded.fasta'
         
     shell:
         '''
@@ -36,3 +38,24 @@ rule split_fastas:
         -t {output.test1} -o {output.train1} -v {output.val1} \
         -r 42
         '''
+
+rule prepare_datasets:
+    input:
+        test='Data/fasta/test_uniprot.fasta',
+        train='Data/fasta/train_uniprot.fasta',
+        val='Data/fasta/validation_uniprot.fasta',
+        test1='Data/fasta/test_recoded.fasta',
+        train1='Data/fasta/train_recoded.fasta',
+        val1='Data/fasta/validation_recoded.fasta'
+    output:
+        test_csv = 'Data/csv_datasets/test_csv',
+        train_csv = 'Data/csv_datasets/train_csv',
+        val_csv = 'Data/csv_datasets/val_csv'
+    shell: 
+        '''
+        python format_data.py \
+        --uniprot {input.test} {input.train} {input.val} \
+        --recoded {input.test1} {input.train1} {input.val1} \
+        --outputs {output.test_csv} {output.train_csv} {output.val_csv}
+        '''
+        

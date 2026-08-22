@@ -1,0 +1,26 @@
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 4
+Rules claiming more threads will be scaled down.
+Job stats:
+job          count
+---------  -------
+all              1
+make_csvs        1
+total            2
+
+Select jobs to execute...
+
+[Fri Aug 21 23:30:23 2026]
+rule make_csvs:
+    input: Data/test_uniprot.fasta, Data/train_uniprot.fasta, Data/validation_uniprot.fasta, Data/test_recoded.fasta, Data/train_recoded.fasta, Data/validation_recoded.fasta
+    output: test_csv, train_csv, val_csv
+    jobid: 1
+    reason: Missing output files: train_csv
+    resources: tmpdir=/tmp
+
+RuleException in rule make_csvs in file /home/jcape/coding/IDR-Finder/snakefile, line 40:
+NameError: The name 'outputs' is unknown in this context. Please make sure that you defined that variable. Also note that braces not used for variable access have to be escaped by repeating them, i.e. {{print $1}}, when formatting the following:
+
+        python format_data.py         --uniprot {input.test} {input.train} {input.val}         --recoded {input.test1} {input.train1} {input.val1}         --outputs {outputs.test_csv} {outputs.train_csv} {outputs.val_csv}
+        
