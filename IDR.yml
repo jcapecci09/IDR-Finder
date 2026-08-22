@@ -1,0 +1,15 @@
+name: protein-disorder
+
+channels:
+  - conda-forge
+  - bioconda
+
+dependencies:
+  - python=3.13
+  - pip
+  - pandas
+  - pip:
+      - git+https://github.com/jcapecci09/DisProtEncoder.git
+      - git+https://github.com/jcapecci09/FASTA-Splitter.git
+      - git+https://github.com/jcapecci09/MultiFastaCollector.git
+  

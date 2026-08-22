@@ -1,0 +1,36 @@
+The flag 'directory' used in rule all is only valid for outputs, not inputs.
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 4
+Rules claiming more threads will be scaled down.
+Job stats:
+job               count
+--------------  -------
+all                   1
+disprotencoder        1
+total                 2
+
+Select jobs to execute...
+
+[Fri Aug 21 18:07:04 2026]
+rule disprotencoder:
+    input: consensus_IDR.txt
+    output: Data
+    jobid: 1
+    reason: Missing output files: Data
+    resources: tmpdir=/tmp
+
+Terminating processes on user request, this might take some time.
+[Fri Aug 21 18:07:50 2026]
+Error in rule disprotencoder:
+    jobid: 1
+    input: consensus_IDR.txt
+    output: Data
+    shell:
+        
+        mkdir Data
+        DisProtEncoder -i consensus_IDR.txt -o Data -w 4
+        
+        (one of the commands exited with non-zero exit code; note that snakemake uses bash strict mode!)
+
+Complete log: .snakemake/log/2026-08-21T180703.965120.snakemake.log

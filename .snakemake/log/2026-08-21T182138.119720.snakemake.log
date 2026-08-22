@@ -1,0 +1,22 @@
+The flag 'directory' used in rule all is only valid for outputs, not inputs.
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 4
+Rules claiming more threads will be scaled down.
+Job stats:
+job               count
+--------------  -------
+all                   1
+disprotencoder        1
+total                 2
+
+Select jobs to execute...
+
+[Fri Aug 21 18:21:38 2026]
+rule disprotencoder:
+    input: consensus_IDR.txt
+    output: Data
+    jobid: 1
+    reason: Missing output files: Data
+    resources: tmpdir=/tmp
+
